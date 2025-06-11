@@ -37,6 +37,5 @@ Para ejecutar este proyecto, necesitas lo siguiente:
 
 1. Java Development Kit (JDK): Versión 11 o superior.
 2. Entorno de desarrollo: Eclipse, IntelliJ IDEA o cualquier IDE compatible con Java.
-3. Git: Para clonar y gestionar el repositorio (opcional).
-4. Terminal o Consola: Para ejecutar el programa desde la línea de comandos.
+3. Terminal o Consola: Para ejecutar el programa desde la línea de comandos.
 
