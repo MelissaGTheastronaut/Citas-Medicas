@@ -20,15 +20,16 @@ class Paciente {
         return "ID: " + id + ", Nombre: " + nombre;
     }
 }
-
 class CitaNode {
     LocalDateTime fechaHora;
     CitaNode izquierda, derecha;
     String paciente;
+    int altura;
 
     public CitaNode(LocalDateTime fechaHora, String paciente) {
         this.fechaHora = fechaHora;
         this.paciente = paciente;
+        this.altura = 1; // Inicialmente, la altura del nodo es 1
     }
 }
 
@@ -51,8 +52,78 @@ class ArbolCitas {
             nodo.derecha = insertar(nodo.derecha, fechaHora, paciente);
         } else {
             System.out.println("¡Conflicto de horario! Ya existe una cita a esta hora.");
+            return nodo;
         }
+
+        // Actualizar la altura del nodo
+        nodo.altura = 1 + Math.max(altura(nodo.izquierda), altura(nodo.derecha));
+
+        // Verificar y ajustar el balance
+        int balance = obtenerBalance(nodo);
+
+        // Caso 1: Rotación a la derecha (desbalance a la izquierda)
+        if (balance > 1 && fechaHora.isBefore(nodo.izquierda.fechaHora)) {
+            return rotarDerecha(nodo);
+        }
+
+        // Caso 2: Rotación a la izquierda (desbalance a la derecha)
+        if (balance < -1 && fechaHora.isAfter(nodo.derecha.fechaHora)) {
+            return rotarIzquierda(nodo);
+        }
+
+        // Caso 3: Rotación izquierda-derecha
+        if (balance > 1 && fechaHora.isAfter(nodo.izquierda.fechaHora)) {
+            nodo.izquierda = rotarIzquierda(nodo.izquierda);
+            return rotarDerecha(nodo);
+        }
+
+        // Caso 4: Rotación derecha-izquierda
+        if (balance < -1 && fechaHora.isBefore(nodo.derecha.fechaHora)) {
+            nodo.derecha = rotarDerecha(nodo.derecha);
+            return rotarIzquierda(nodo);
+        }
+
         return nodo;
+    }
+
+    private int altura(CitaNode nodo) {
+        return (nodo == null) ? 0 : nodo.altura;
+    }
+
+    private int obtenerBalance(CitaNode nodo) {
+        return (nodo == null) ? 0 : altura(nodo.izquierda) - altura(nodo.derecha);
+    }
+
+    private CitaNode rotarDerecha(CitaNode y) {
+        CitaNode x = y.izquierda;
+        CitaNode T2 = x.derecha;
+
+        // Realizar rotación
+        x.derecha = y;
+        y.izquierda = T2;
+
+        // Actualizar alturas
+        y.altura = Math.max(altura(y.izquierda), altura(y.derecha)) + 1;
+        x.altura = Math.max(altura(x.izquierda), altura(x.derecha)) + 1;
+
+        // Retornar nueva raíz
+        return x;
+    }
+
+    private CitaNode rotarIzquierda(CitaNode x) {
+        CitaNode y = x.derecha;
+        CitaNode T2 = y.izquierda;
+
+        // Realizar rotación
+        y.izquierda = x;
+        x.derecha = T2;
+
+        // Actualizar alturas
+        x.altura = Math.max(altura(x.izquierda), altura(x.derecha)) + 1;
+        y.altura = Math.max(altura(y.izquierda), altura(y.derecha)) + 1;
+
+        // Retornar nueva raíz
+        return y;
     }
 
     public CitaNode seleccionarK(int k) {
@@ -82,6 +153,9 @@ class ArbolCitas {
         return 1 + tamañoSubarbol(nodo.izquierda) + tamañoSubarbol(nodo.derecha);
     }
 }
+
+
+
 
 public class Citas {
     static ArrayList<Paciente> pacientes = new ArrayList<>();
@@ -172,7 +246,11 @@ public class Citas {
                 default -> System.out.println("Opción inválida. Intente de nuevo.");
             }
         } while (opcion != 7);
+        
+        
+        
     }
+
 
     static void QuickSortPacientes(int low, int high) {
         if (low < high) {
