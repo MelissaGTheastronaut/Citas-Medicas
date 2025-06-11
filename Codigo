@@ -3,6 +3,7 @@ package estructura;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 class Paciente {
@@ -84,6 +85,7 @@ class ArbolCitas {
 
 public class Citas {
     static ArrayList<Paciente> pacientes = new ArrayList<>();
+    static HashMap<Integer, Paciente> pacientesMap = new HashMap<>();
     static ArbolCitas arbolCitas = new ArbolCitas();
 
     public static void main(String[] args) {
@@ -94,86 +96,107 @@ public class Citas {
             System.out.println("--- Sistema de Citas ---");
             System.out.println("1. Añadir un Paciente");
             System.out.println("2. Agendar Cita");
-            System.out.println("3. Mostrar Pacientes (Bubble Sort)");
+            System.out.println("3. Mostrar Pacientes (Quick Sort)");
             System.out.println("4. Ordenar Pacientes (Selection Sort)");
-            System.out.println("5. Seleccionar k-ésima Cita en Árbol Binario");
-            System.out.println("6. Salir");
+            System.out.println("5. Seleccionar k-ésima Cita en (Árbol Binario)");
+            System.out.println("6. Buscar Paciente por ID");
+            System.out.println("7. Salir");
             System.out.print("Seleccione una opción: ");
             opcion = sc.nextInt();
             sc.nextLine(); // Consumir salto de línea
 
             switch (opcion) {
-                case 1:
+                case 1 -> {
                     System.out.print("Ingrese ID del paciente: ");
                     int id = sc.nextInt();
                     sc.nextLine();
                     System.out.print("Ingrese nombre del paciente: ");
                     String nombre = sc.nextLine();
-                    pacientes.add(new Paciente(id, nombre));
+                    Paciente nuevoPaciente = new Paciente(id, nombre);
+                    pacientes.add(nuevoPaciente);
+                    pacientesMap.put(id, nuevoPaciente); // Agregar al HashMap
                     System.out.println("Paciente añadido con éxito.");
-                    break;
+                }
 
-                case 2:
+                case 2 -> {
                     System.out.print("Ingrese fecha y hora (yyyyMMddHHmm): ");
                     String fechaHora = sc.nextLine();
                     System.out.print("Ingrese nombre del paciente: ");
                     String pacienteCita = sc.nextLine();
                     arbolCitas.insertarCita(fechaHora, pacienteCita);
                     System.out.println("Cita añadida con éxito.");
-                    break;
+                }
 
-                case 3:
-                    bubbleSortPacientes();
-                    System.out.println("--- Pacientes Ordenados (Bubble Sort) ---");
+                case 3 -> {
+                    QuickSortPacientes(0, pacientes.size() - 1);
+                    System.out.println("--- Pacientes Ordenados (Quick Sort) ---");
                     for (Paciente p : pacientes) {
                         System.out.println(p);
                     }
-                    break;
+                }
 
-                case 4:
+                case 4 -> {
                     selectionSortPacientes();
                     System.out.println("--- Pacientes Ordenados (Selection Sort) ---");
                     for (Paciente p : pacientes) {
                         System.out.println(p);
                     }
-                    break;
+                }
 
-                case 5:
+                case 5 -> {
                     System.out.print("Ingrese el valor de k: ");
                     int k = sc.nextInt();
                     CitaNode kthCita = arbolCitas.seleccionarK(k);
                     if (kthCita != null) {
                         System.out.println("Cita " + k + "-ésima: " +
-                            kthCita.fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
-                            " - Paciente: " + kthCita.paciente);
+                                kthCita.fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) +
+                                " - Paciente: " + kthCita.paciente);
                     } else {
                         System.out.println("No se encontró la cita.");
                     }
-                    break;
+                }
 
-                case 6:
-                    System.out.println("Saliendo del sistema...");
-                    break;
+                case 6 -> {
+                    System.out.print("Ingrese el ID del paciente a buscar: ");
+                    int idBuscado = sc.nextInt();
+                    Paciente encontrado = pacientesMap.get(idBuscado);
+                    if (encontrado != null) {
+                        System.out.println("Paciente encontrado: " + encontrado);
+                    } else {
+                        System.out.println("Paciente no encontrado.");
+                    }
+                }
 
-                default:
-                    System.out.println("Opción inválida. Intente de nuevo.");
+                case 7 -> System.out.println("Saliendo del sistema...");
+
+                default -> System.out.println("Opción inválida. Intente de nuevo.");
             }
-        } while (opcion != 6);
+        } while (opcion != 7);
     }
 
-    static void bubbleSortPacientes() {
-        boolean swapped;
-        do {
-            swapped = false;
-            for (int i = 0; i < pacientes.size() - 1; i++) {
-                if (pacientes.get(i).id > pacientes.get(i + 1).id) {
+    static void QuickSortPacientes(int low, int high) {
+        if (low < high) {
+            int pivotIndex = low;
+            Paciente pivot = pacientes.get(pivotIndex);
+            int storeIndex = pivotIndex + 1;
+
+            for (int i = pivotIndex + 1; i <= high; i++) {
+                if (pacientes.get(i).id < pivot.id ||
+                        (pacientes.get(i).id == pivot.id && Math.random() < 0.5)) {
                     Paciente temp = pacientes.get(i);
-                    pacientes.set(i, pacientes.get(i + 1));
-                    pacientes.set(i + 1, temp);
-                    swapped = true;
+                    pacientes.set(i, pacientes.get(storeIndex));
+                    pacientes.set(storeIndex, temp);
+                    storeIndex++;
                 }
             }
-        } while (swapped);
+
+            Paciente temp = pacientes.get(pivotIndex);
+            pacientes.set(pivotIndex, pacientes.get(storeIndex - 1));
+            pacientes.set(storeIndex - 1, temp);
+
+            QuickSortPacientes(low, storeIndex - 2);
+            QuickSortPacientes(storeIndex, high);
+        }
     }
 
     static void selectionSortPacientes() {
